@@ -409,10 +409,61 @@
     从远程抓取分支，使用git pull，如果有冲突，要先处理冲突。
 
 
+# 6. 标签管理
+### 6.1 创建标签
+* 首先，切换到需要打标签的分支上，然后输入命令**git tag <name>** 就可以打一个新标签
+* 可以用命令**git tag**查看所有标签
+* 默认tag是创建到最新提交的commit上的。如果想打标签到之前的版本上，可以用**git log --pretty=oneline --abbrev-commit**来查看历史提交的commit ID,然后输入命令**git tag v0.9 6224937**
+* 标签不是按时间顺序列出，而是按字母排序的。可以用**git show <tagname>** 查看标签信息
+* 还可以创建带有说明的标签，**-a**指定标签名，**-m**指定说明文字：
+    ```buildoutcfg
+    $ git tag -a v0.1 -m "version 0.1 released" 3628164
+    ```
+* 还可以通过-s用私钥签名一个标签：**$ git tag -s v0.2 -m "signed version 0.2 released" fec145a**
 
+#### 小结：
 
+    1. 命令git tag <name>用于新建一个标签，默认为HEAD，也可以指定一个commit id；
 
+    2. git tag -a <tagname> -m "blablabla..."可以指定标签信息；
 
+    3. git tag -s <tagname> -m "blablabla..."可以用PGP签名标签；
 
+    4. 命令git tag可以查看所有标签。
 
+### 6.2 操作标签
+* 如果标签打错了，也可以删除：**git tag -d v0.1**
+* 因为创建的标签都只存储在本地，不会自动推送到远程。所以，打错的标签可以在本地安全删除
+* 如果要推送某个标签到远程，使用命令git push origin <tagname>：
+    ```buildoutcfg
+    $ git push origin v1.0
+    Total 0 (delta 0), reused 0 (delta 0)
+    To git@github.com:michaelliao/learngit.git
+     * [new tag]         v1.0 -> v1.0
+    ```
+* 或者使用命令**$ git push origin --tags**，一次性推送全部尚未推送到远程的本地标签：
+    ```buildoutcfg
+    $ git push origin --tags
+    Counting objects: 1, done.
+    Writing objects: 100% (1/1), 554 bytes, done.
+    Total 1 (delta 0), reused 0 (delta 0)
+    To git@github.com:michaelliao/learngit.git
+     * [new tag]         v0.2 -> v0.2
+     * [new tag]         v0.9 -> v0.9
+    ```
+* 删除远程标签：
+    1. 先从本地删除：**$ git tag -d v0.9**
+    1. 然后，从远程删除。删除命令也是push，但是格式如下(**$ git push origin :refs/tags/v0.9**)：
+    ```buildoutcfg
+    $ git push origin :refs/tags/v0.9
+    To git@github.com:michaelliao/learngit.git
+     - [deleted]         v0.9
+    ```
+#### 小结：
+    命令git push origin <tagname>可以推送一个本地标签；
 
+    命令git push origin --tags可以推送全部未推送过的本地标签；
+
+    命令git tag -d <tagname>可以删除一个本地标签；
+
+    命令git push origin :refs/tags/<tagname>可以删除一个远程标签。
