@@ -185,28 +185,228 @@
 * GitHub给出的地址不止一个，还可以用**https://github.com/michaelliao/gitskills.git**这样的地址
 
 # 5.分支管理
+### 5.1 创建与合并分支
+1. 首先，我们创建dev分支，然后切换到dev分支：
+    ```buildoutcfg
+    $ git checkout -b dev
+    Switched to a new branch 'dev'
+    ```
+    * **git checkout**命令加上 **-b**参数表示**创建并切换**，相当于以下两条命令：
+        ```buildoutcfg
+        $ git branch dev
+        $ git checkout dev
+        Switched to branch 'dev'
+    ```
+1. 然后，用**git branch**命令查看当前分支。git branch命令会列出所有分支，当前分支前面会标一个*号
+1. dev分支的工作完成，我们就可以切换回master分支： **$ git checkout master**
+1. 把dev分支的工作成果合并到master分支上：
+    ```buildoutcfg
+    $ git merge dev
+    Updating d17efd8..fec145a
+    Fast-forward
+     readme.txt |    1 +
+     1 file changed, 1 insertion(+)
+    ```
+    * 注意到上面的Fast-forward信息，Git告诉我们，这次合并是“快进模式”，也就是直接把master指向dev的当前提交，所以合并速度非常快。
+1. 合并完成后，就可以放心地删除dev分支了： **$ git branch -d dev**
+1. 删除后，用**$ git branch**命令查看branch，就只剩下master分支了
+
+#### 小结：
+    Git鼓励大量使用分支：
+    
+    查看分支：git branch
+    
+    创建分支：git branch <name>
+    
+    切换分支：git checkout <name>
+    
+    创建+切换分支：git checkout -b <name>
+    
+    合并某分支到当前分支：git merge <name>
+    
+    删除分支：git branch -d <name>
+
+### 5.2 解决冲突
+* 当Git无法自动合并分支时，就必须首先解决冲突。解决冲突后，再提交，合并完成。
+* 用**git log --graph**命令可以看到分支合并图：
+    ```buildoutcfg
+    $ git log --graph --pretty=oneline --abbrev-commit
+    *   59bc1cb conflict fixed
+    |\
+    | * 75a857c AND simple
+    * | 400b400 & simple
+    |/
+    * fec145a branch test
+    ...
+    ```
+* 最后，删除feature1分支：**$ git branch -d feature1**
+
+### 5.3 分支管理策略
+* 分之合并时，Git默认使用的是Fast forward模式，这种模式下，删除分支后，会丢掉分支信息。
+* 合并分支时，加上--no-ff参数就可以用普通模式合并，**git merge --no-ff -m "merge with no-ff" dev**,合并后的历史有分支，能看出来曾经做过合并，而fast forward合并就看不出来曾经做过合并。
+    ```buildoutcfg
+    $ git merge --no-ff -m "merge with no-ff" dev
+    Merge made by the 'recursive' strategy.
+     readme.txt |    1 +
+     1 file changed, 1 insertion(+)
+    ```
+    * 因为本次合并要创建一个新的commit，所以加上-m参数，把commit描述写进去。
+* 合并后，我们用git log看看分支历史：
+    ```buildoutcfg
+    $ git log --graph --pretty=oneline --abbrev-commit
+    *   7825a50 merge with no-ff
+    |\
+    | * 6224937 add merge
+    |/
+    *   59bc1cb conflict fixed
+    ...
+    ```
+
+### 5.4 Bug分支
+* Git还提供了一个stash功能，可以把当前工作现场“储藏”起来，等以后恢复现场后继续工作：
+    ```buildoutcfg
+    $ git stash
+    Saved working directory and index state WIP on dev: 6224937 add merge
+    HEAD is now at 6224937 add merge
+    ```
+* 此时，用git status查看工作区，就是干净的（除非有没有被Git管理的文件），因此可以放心地创建分支来修复bug。
+    ```buildoutcfg
+    $ git checkout master
+    Switched to branch 'master'
+    Your branch is ahead of 'origin/master' by 6 commits.
+    $ git checkout -b issue-101
+    Switched to a new branch 'issue-101'
+    
+    $ git add readme.txt 
+    $ git commit -m "fix bug 101"
+    [issue-101 cc17032] fix bug 101
+     1 file changed, 1 insertion(+), 1 deletion(-)
+     
+     $ git checkout master
+    Switched to branch 'master'
+    Your branch is ahead of 'origin/master' by 2 commits.
+    $ git merge --no-ff -m "merged bug fix 101" issue-101
+    Merge made by the 'recursive' strategy.
+     readme.txt |    2 +-
+     1 file changed, 1 insertion(+), 1 deletion(-)
+    $ git branch -d issue-101
+    Deleted branch issue-101 (was cc17032).
+    
+    $ git checkout dev
+    Switched to branch 'dev'
+    $ git status
+    # On branch dev
+    nothing to commit (working directory clean)
+    
+    ```
+* 工作区是干净的，刚才的工作现场存到哪去了？用git stash list命令看看：
+    ```buildoutcfg
+    $ git stash list
+    stash@{0}: WIP on dev: 6224937 add merge
+    ```
+* 工作现场还在，Git把stash内容存在某个地方了，但是需要恢复一下，有两个办法：
+    * 一是用**git stash apply**恢复，但是恢复后，stash内容并不删除，你需要用**git stash drop**来删除
+    * 另一种方式是用git stash pop，恢复的同时把stash内容也删了：
+    ```buildoutcfg
+    $ git stash pop
+    # On branch dev
+    # Changes to be committed:
+    #   (use "git reset HEAD <file>..." to unstage)
+    #
+    #       new file:   hello.py
+    #
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #       modified:   readme.txt
+    #
+    Dropped refs/stash@{0} (f624f8e5f082f2df2bed8a4e09c12fd2943bdd40)
+    ```
+ * 再用**git stash list**查看，就看不到任何stash内容了
+ * 可以多次stash，恢复的时候，先用git stash list查看，然后恢复指定的stash，用命令：
+    ```buildoutcfg
+    $ git stash apply stash@{0}
+    ```
+#### 小结：
+    修复bug时，我们会通过创建新的bug分支进行修复，然后合并，最后删除；
+
+    当手头工作没有完成时，先把工作现场git stash一下，然后去修复bug，修复后，再git stash pop，回到工作现场。
+
+### 5.5 Feature分支
+* 开发一个新feature，最好新建一个分支.
+* 删除分支用命令： **git branch -d <name>**.
+* 如果要丢弃一个没有被合并过的分支，可以通过 **git branch -D <name>** 强行删除.
+
+### 5.6 多人协作
+* 要查看远程库的信息，用**git remote** 
+* 或者，用git remote -v显示更详细的信息：
+    ```buildoutcfg
+    $ git remote -v
+    origin  git@github.com:michaelliao/learngit.git (fetch)
+    origin  git@github.com:michaelliao/learngit.git (push)
+    ```
+#### 推送分支
+* 推送分支命令**git push origin master**,就是把该分支上的所有本地提交推送到远程库。推送时，要指定本地分支，这样，Git就会把该分支推送到远程库对应的远程分支上：
+
+#### 抓取分支
+* 模拟一个你的小伙伴，可以在另一台电脑（注意要把SSH Key添加到GitHub）或者同一台电脑的另一个目录下克隆：
+    * **$ git clone git@github.com:michaelliao/learngit.git**
+* 当你的小伙伴从远程库clone时，默认情况下，你的小伙伴只能看到本地的master分支
+* 要在dev分支上开发，就必须创建远程origin的dev分支到本地，于是他用这个命令创建本地dev分支：
+    * **$ git checkout -b dev origin/dev**
+*  **git push origin dev**同时修改后推送有时会失败， Git已经提示我们，先用git pull把最新的提交从origin/dev抓下来，然后，在本地合并，解决冲突，再推送： 
+    ```buildoutcfg
+    $ git pull
+    remote: Counting objects: 5, done.
+    remote: Compressing objects: 100% (2/2), done.
+    remote: Total 3 (delta 0), reused 3 (delta 0)
+    Unpacking objects: 100% (3/3), done.
+    From github.com:michaelliao/learngit
+       fc38031..291bea8  dev        -> origin/dev
+    There is no tracking information for the current branch.
+    Please specify which branch you want to merge with.
+    See git-pull(1) for details
+    
+        git pull <remote> <branch>
+    
+    If you wish to set tracking information for this branch you can do so with:
+    
+        git branch --set-upstream dev origin/<branch>
+    ```
+* git pull也失败了，原因是没有指定本地dev分支与远程origin/dev分支的链接，根据提示，设置dev和origin/dev的链接：
+    ```buildoutcfg
+    $ git branch --set-upstream dev origin/dev
+    Branch dev set up to track remote branch dev from origin.
+    ```
+* 此时再pull就成功了。
+* 因此，多人协作的工作模式通常是这样：
+    
+
+    首先，可以试图用git push origin branch-name推送自己的修改；
+
+    如果推送失败，则因为远程分支比你的本地更新，需要先用git pull试图合并；
+
+    如果合并有冲突，则解决冲突，并在本地提交；
+
+    没有冲突或者解决掉冲突后，再用git push origin branch-name推送就能成功！
+
+    如果git pull提示“no tracking information”，则说明本地分支和远程分支的链接关系没有创建，用命令git branch --set-upstream branch-name origin/branch-name。
+    
+#### 小结：
 
 
+    查看远程库信息，使用git remote -v；
 
+    本地新建的分支如果不推送到远程，对其他人就是不可见的；
 
+    从本地推送分支，使用git push origin branch-name，如果推送失败，先用git pull抓取远程的新提交；
 
+    在本地创建和远程分支对应的分支，使用git checkout -b branch-name origin/branch-name，本地和远程分支的名称最好一致；
 
+    建立本地分支和远程分支的关联，使用git branch --set-upstream branch-name origin/branch-name；
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    从远程抓取分支，使用git pull，如果有冲突，要先处理冲突。
 
 
 
