@@ -467,3 +467,30 @@
     命令git tag -d <tagname>可以删除一个本地标签；
 
     命令git push origin :refs/tags/<tagname>可以删除一个远程标签。
+
+# 7. 自定义Git
+* 让Git显示颜色，会让命令输出看起来更醒目。 **$ git config --global color.ui true**
+
+### 7.1 忽略特殊文件
+* 在Git工作区的根目录下创建一个特殊的.gitignore文件，然后把要忽略的文件名填进去，Git就会自动忽略这些文件
+* 有些时候，你想添加一个文件到Git，但发现添加不了，原因是这个文件被.gitignore忽略了，可以用 **-f**强制添加到Git
+* **$ git add -f App.class**
+* 或者你发现，可能是.gitignore写得有问题，需要找出来到底哪个规则写错了，可以用git check-ignore命令检查：
+    ```buildoutcfg
+    $ git check-ignore -v App.class
+    .gitignore:3:*.class    App.class
+    ```
+* 最后一步就是把.gitignore也提交到Git，就完成了！当然检验.gitignore的标准是git status命令是不是说working directory clean
+   
+#### 小结：
+    1. 忽略某些文件时，需要编写.gitignore；
+
+    2. .gitignore文件本身要放到版本库里，并且可以对.gitignore做版本管理！
+
+### 7.2 配置别名
+* **$ git config --global alias.st status**
+* **git config --global alias.lg "log --color --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit"**
+* 每个仓库的Git配置文件都放在.git/config文件中,别名就在[alias]后面，要删除别名，直接把对应的行删掉即可
+
+
+
