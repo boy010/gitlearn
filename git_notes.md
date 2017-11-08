@@ -46,7 +46,7 @@
 # 3. 时光机穿梭
 * 要随时掌握工作区的状态，使用**git status**命令
 * 如果git status告诉你有文件被修改过，用**git diff**可以查看修改内容
-## 3.1 版本回退
+### 3.1 版本回退
 * **git log** 来查看git的历史记录，显示从最近到最远的提交日志
 * git log加上 **--pretty=oneline** 参数,可以简化输出信息
     ```buildoutcfg
@@ -76,14 +76,14 @@
 
     要重返未来，用git reflog查看命令历史，以便确定要回到未来的哪个版本。
 
-## 3.2 工作区和暂存区
+### 3.2 工作区和暂存区
 * 工作区（Working Directory）
     * 就是你在电脑里能看到的目录，比如我的learngit文件夹就是一个工作区
 * 版本库（Repository）
     * 工作区有一个隐藏目录.git，这个不算工作区，而是Git的版本库。
     * Git的版本库里存了很多东西，其中最重要的就是称为**stage（或者叫index）的暂存区**，还有Git为我们自动创建的第一个分支master，以及指向master的一个指针叫HEAD。
     
-## 3.3 管理修改
+### 3.3 管理修改
 * 第一次修改 -> git add -> 第二次修改 -> git commit
     * Git管理的是修改，当你用git add命令后，在工作区的第一次修改被放入暂存区，准备提交，但是，在工作区的第二次修改并没有放入暂存区，所以，git commit只负责把暂存区的修改提交了，也就是第一次的修改被提交了，第二次的修改不会被提交。
 * 提交后，用**git diff HEAD -- readme.txt**命令可以查看工作区和版本库里面最新版本的区别：
@@ -106,7 +106,7 @@
 #### 小结：
     每次修改，如果不add到暂存区，那就不会加入到commit中。
 
-## 3.3 撤销修改
+### 3.4 撤销修改
 * **git checkout -- readme.txt**可以丢弃工作区的修改
 * 用命令**git reset HEAD readme.txt**可以把暂存区的修改撤销掉
 #### 小结：
@@ -116,7 +116,19 @@
     
     场景3：已经提交了不合适的修改到版本库时，想要撤销本次提交，参考版本回退一节，git reset --hard HEAD^，不过前提是没有推送到远程库。
 
-## 3.4 撤销修改
+### 3.5 删除文件
+* 当在工作区删除一个文件后，如果确实要从版本库中删除该文件，那就用命令**git rm**删掉，并且再**git commit**
+    ```buildoutcfg
+    $ git rm test.txt
+    rm 'test.txt'
+    $ git commit -m "remove test.txt"
+    [master d17efd8] remove test.txt
+     1 file changed, 1 deletion(-)
+     delete mode 100644 test.txt
+    ```
+* 如果是删错了，因为版本库里还有，可以用**git checkout -- test.txt**把误删的文件恢复到最新版。
+
+# 4.远程仓库
 
 
 
