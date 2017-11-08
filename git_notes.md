@@ -129,13 +129,62 @@
 * 如果是删错了，因为版本库里还有，可以用**git checkout -- test.txt**把误删的文件恢复到最新版。
 
 # 4.远程仓库
+* 第1步：创建SSH Key (注意使用默认值即可)
+    ```buildoutcfg
+    $ ssh-keygen -t rsa -C "youremail@example.com"
+    ```
+    * 目录里找到.ssh目录，里面有id_rsa和id_rsa.pub两个文件，这两个就是SSH Key的秘钥对，id_rsa是私钥，不能泄露出去，id_rsa.pub是公钥，可以放心地告诉任何人。  
+* 第2步：登陆GitHub，打开“Account settings”，“SSH Keys”页面。然后，点“Add SSH Key”，填上任意Title，在Key文本框里粘贴id_rsa.pub文件的内容，点“Add Key”
 
+### 4.1 添加远程库
+1. 登陆GitHub，然后，在右上角找到“Create a new repo”按钮，创建一个新的仓库
+1. 目前，在GitHub上的这个learngit仓库还是空的，GitHub告诉我们，可以从这个仓库克隆出新的仓库，也可以把一个已有的本地仓库与之关联，然后，把本地仓库的内容推送到GitHub仓库。
+1. 我们根据GitHub的提示，在本地的learngit仓库下运行命令：
+    ```buildoutcfg
+    $ git remote add origin git@github.com:boy010/learngit.git
+    ```
+1. 添加后，远程库的名字就是origin，这是Git默认的叫法，也可以改成别的，但是origin这个名字一看就知道是远程库。
+1. 下一步，就可以把本地库的所有内容推送到远程库上
+    ```buildoutcfg
+    $ git push -u origin master
+    Counting objects: 19, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (19/19), done.
+    Writing objects: 100% (19/19), 13.73 KiB, done.
+    Total 23 (delta 6), reused 0 (delta 0)
+    To git@github.com:michaelliao/learngit.git
+     * [new branch]      master -> master
+    Branch master set up to track remote branch master from origin.                             
+    ```
+1. 把本地库的内容推送到远程，用**git push**命令，实际上是把当前分支master推送到远程。由于远程库是空的，我们第一次推送master分支时，加上了 **-u参数**，Git不但会把本地的master分支内容推送的远程新的master分支，还会把本地的master分支和远程的master分支关联起来，在以后的推送或者拉取时就可以简化命令。
+1. 从现在起，只要本地作了提交，就可以通过命令：**git push origin master**把本地master分支的最新修改推送至GitHub
 
+#### 小结：
+    要关联一个远程库，使用命令git remote add origin git@server-name:path/repo-name.git；
+    
+    关联后，使用命令git push -u origin master第一次推送master分支的所有内容；
+    
+    此后，每次本地提交后，只要有必要，就可以使用命令git push origin master推送最新修改；
 
+### 4.2 从远程库克隆
+* 假设我们从零开发，那么最好的方式是先创建远程库，然后，从远程库克隆
+    * 我们勾选Initialize this repository with a README，这样GitHub会自动为我们创建一个README.md文件。创建完毕后，可以看到README.md文件
+* 下一步是用命令**git clone**克隆一个本地库:
+    ```buildoutcfg
+    $ git clone git@github.com:boy010/gitskills.git
+  
+    Cloning into 'gitskills'...
+    remote: Counting objects: 3, done.
+    remote: Total 3 (delta 0), reused 0 (delta 0)
+    Receiving objects: 100% (3/3), done.
+    
+    $ cd gitskills
+    $ ls
+    README.md
+    ```
+* GitHub给出的地址不止一个，还可以用**https://github.com/michaelliao/gitskills.git**这样的地址
 
-
-
-
+# 5.分支管理
 
 
 
